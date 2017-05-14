@@ -1,0 +1,34 @@
+{
+  "name": "@geut/chassis",
+  "version": "1.0.0",
+  "description": "Every bot needs a chassis.",
+  "main": "lib/index.js",
+  "scripts": {
+    "pretest": "eslint lib",
+    "test": "tape test/*.js | faucet"
+  },
+  "keywords": [
+    "bots",
+    "geut"
+  ],
+  "author": "GEUT",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-postcss": "^2.0.2",
+    "faucet": "0.0.1",
+    "tape": "^4.6.3"
+  },
+  "dependencies": {
+    "mini-signals": "^1.1.1",
+    "topo": "^2.0.2"
+  },
+  "eslintConfig": {
+    "extends": "postcss",
+    "rules": {
+      "max-len": 0,
+      "new-cap": 0,
+      "consistent-return": 0
+    }
+  }
+}
