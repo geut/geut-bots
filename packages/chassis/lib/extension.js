@@ -20,6 +20,7 @@ internals.Extension.prototype.add = function (event) {
     const options = event.options || {};
     const methodsLength = methods.length;
     let idx = 0;
+
     for (; idx < methodsLength; ++idx) {
         const settings = {
             before: options.before,

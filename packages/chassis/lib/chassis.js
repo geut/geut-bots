@@ -32,7 +32,13 @@ exports = module.exports = internals.Chassis = function (opts = {}) {
         [EVENTS.start.post]: new Extension(EVENTS.start.post, this),
         [EVENTS.stop.pre]: new Extension(EVENTS.stop.pre, this),
         [EVENTS.stop.on]: new Extension(EVENTS.stop.pre, this),
-        [EVENTS.stop.post]: new Extension(EVENTS.stop.post, this)
+        [EVENTS.stop.post]: new Extension(EVENTS.stop.post, this),
+        [EVENTS.message.sent.pre]: new Extension(EVENTS.message.sent.pre, this),
+        [EVENTS.message.sent.on]: new Extension(EVENTS.message.sent.on, this),
+        [EVENTS.message.sent.post]: new Extension(EVENTS.message.sent.post, this),
+        [EVENTS.message.received.pre]: new Extension(EVENTS.message.received.pre, this),
+        [EVENTS.message.received.on]: new Extension(EVENTS.message.received.on, this),
+        [EVENTS.message.received.post]: new Extension(EVENTS.message.received.post, this)
     };
     this._signals = {
         sense: new Signal(),

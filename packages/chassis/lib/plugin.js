@@ -4,7 +4,6 @@
  * and extensions hooks usage.
  */
 
-const Extension = require('./extension');
 const Signal = require('mini-signals');
 const EVENTS = require('./constants').events;
 
@@ -18,16 +17,6 @@ exports = module.exports = internals.Plugin = function (chassis) {
     this.root = chassis;
     // services shortcut
     this.services = this.root._service.services;
-
-    // Add some extra extensions points from which new pluginx can benefit
-    Object.assign(this.root._extensions, {
-        [EVENTS.message.sent.pre]: new Extension(EVENTS.message.sent.pre, this.root),
-        [EVENTS.message.sent.on]: new Extension(EVENTS.message.sent.on, this.root),
-        [EVENTS.message.sent.post]: new Extension(EVENTS.message.sent.post, this.root),
-        [EVENTS.message.received.pre]: new Extension(EVENTS.message.received.pre, this.root),
-        [EVENTS.message.received.on]: new Extension(EVENTS.message.received.on, this.root),
-        [EVENTS.message.received.post]: new Extension(EVENTS.message.received.post, this.root)
-    });
 
     return this;
 };
@@ -75,7 +64,6 @@ internals.Plugin.prototype.register = function (plugins, options, callback) {
         if (item.dependencies) {
             pluginInstance.dependency(item.dependencies);
         }
-        // debugger
         // Register
         item.register(pluginInstance, item.pluginOptions, next);
     };
@@ -134,9 +122,6 @@ internals.Plugin.prototype._ext = function (event) {
 };
 
 internals.Plugin.prototype.engage = function (messageType, payload) {
-
-    // emit events too?
-    // this.root._events.emit(EVENTS.message.received.pre, payload)
 
     return this.root._invoke(EVENTS.message.received.pre, { messageType, payload })
         .then( () => this.onSense(messageType, payload) )
