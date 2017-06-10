@@ -1,7 +1,7 @@
 // Bot: charly
 const Chassis = require('@geut/Chassis').Chassis;
 const SlackChassis = require('@geut/chassis-slack-service');
-const Conversation = require('../conversation-plugin');
+const Conversation = require('@geut/conversation-plugin');
 const Charly = new Chassis({debug: true});
 
 /**

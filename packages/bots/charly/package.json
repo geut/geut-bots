@@ -19,7 +19,8 @@
   "dependencies": {
     "@slack/client": "^3.9.0",
     "@geut/chassis": "1.0.0",
-    "@geut/chassis-slack-service": "1.0.0"
+    "@geut/chassis-slack-service": "1.0.0",
+    "@geut/conversation-plugin": "0.1.0"
   },
   "devDependencies": {
     "lerna": "2.0.0-beta.30"
