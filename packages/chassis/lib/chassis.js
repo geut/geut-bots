@@ -98,52 +98,36 @@ internals.Chassis.prototype._invoke = function (extType, params) {
     this._assert.strictEqual(typeof extType, 'string', 'An extension type is required');
 
     const exts = this._extensions[extType];
-    let next = (err) => {
+
+    // stepper fn
+    const next = (err, res) => {
 
         if (err) {
             this._events.emit('internal-error', err);
             throw err;
+            // return Promise.reject(err);
         }
 
-        return Promise.resolve();
+        return Promise.resolve(res);
     };
 
     if (!exts.nodes) {
-        return next();
+        return next(null, params);
     }
 
-    const each = (ext) => {
+    const each = (ext, interResult) => {
 
         const bind = ext.bind ? ext.bind : null;
 
-        if (!params) {
-            params = next;
-            next = undefined;
+        if (!interResult) {
+            interResult = params;
         }
-
-        return ext.func.call(bind, params, next);
+        return ext.func.call(bind, interResult, next);
     };
 
     // invoke ext points
-    return this.series(exts.nodes, each);
-
-    /*
-    for (const ext of exts.nodes) {
-
-        const iteratee = () => {
-
-            const done = (err) => {
-                if (err) {
-                    return next(err);
-                }
-                iteratee();
-            };
-            each(ext, done, ctx);
-        };
-
-        iteratee();
-    }
-    */
+    const out = this.series(exts.nodes, each);
+    return out;
 };
 
 internals.Chassis.prototype.startup = function (credentials, serviceName) {

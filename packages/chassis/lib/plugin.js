@@ -124,12 +124,15 @@ internals.Plugin.prototype._ext = function (event) {
 internals.Plugin.prototype.engage = function (messageType, payload) {
 
     return this.root._invoke(EVENTS.message.received.pre, { messageType, payload })
-        .then( () => this.onSense(messageType, payload) )
-        .then( () => this.root._invoke(EVENTS.message.received.post, { messageType, payload }) );
+        .then( (res) => {
+            this.onSense(res);
+        })
+        .then( (res) => this.root._invoke(EVENTS.message.received.post, res) );
 };
 
-internals.Plugin.prototype.onSense = function (messageType, payload) {
-
+internals.Plugin.prototype.onSense = function (msg) {
+    if (!msg) return;
+    const { messageType, payload } = msg;
     this.root._signals[messageType].dispatch(payload);
     return this.root._invoke(EVENTS.message.received.on, { messageType, payload });
 };
@@ -151,8 +154,9 @@ internals.Plugin.prototype.scan = function (fn) {
     this.root._signals.scan.add(fn);
 };
 
-internals.Plugin.prototype.onTrigger = function (payload, where) {
-
+internals.Plugin.prototype.onTrigger = function (msg) {
+    if (!msg) return;
+    const { payload, where } = msg;
     this.root._signals.trigger.dispatch(payload, where);
     return this.root._invoke(EVENTS.message.sent.on, { payload, where });
 };
@@ -160,17 +164,18 @@ internals.Plugin.prototype.onTrigger = function (payload, where) {
 internals.Plugin.prototype.trigger = function (payload, where) {
 
     this.root._assert(this.root._running, 'First you need to register a service and then call chassis.startup method');
-
     return this.root._invoke(EVENTS.message.sent.pre, { payload, where })
-        .then( () => this.onTrigger(payload, where) )
-        .then( () => this.root._invoke(EVENTS.message.sent.post, { payload, where }) );
+        .then( (res) => this.onTrigger(res) )
+        .then( (res) => this.root._invoke(EVENTS.message.sent.post, res) );
 };
 
 internals.Plugin.prototype.series = function (items, action, ctx) {
 
     return items.reduce( (promise, item) => {
         return promise
-            .then( () => action.call(ctx, item) );
+            .then( (result) => {
+                return action.call(ctx, item, result);
+            });
     }, Promise.resolve() );
 };
 
