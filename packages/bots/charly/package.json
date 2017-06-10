@@ -1,0 +1,27 @@
+{
+  "name": "@geut/charly-bot",
+  "version": "1.0.0",
+  "description": "The general purpose geut bot. Era 0.",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "geut",
+    "bot",
+    "slack"
+  ],
+  "engines": {
+    "node": ">=6.10.1"
+  },
+  "author": "GEUT",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/client": "^3.9.0",
+    "@geut/chassis": "1.0.0",
+    "@geut/chassis-slack-service": "1.0.0"
+  },
+  "devDependencies": {
+    "lerna": "2.0.0-beta.30"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@geut/chassis-slack-service",
+  "version": "1.0.0",
+  "description": "Slack service for GEUT's chassis",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "geut",
+    "chassis",
+    "bot",
+    "slack"
+  ],
+  "engines": {
+    "node": ">=6.10.1"
+  },
+  "author": "GEUT",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/client": "^3.9.0"
+  },
+  "devDependencies": {
+    "lerna": "2.0.0-beta.30"
+  }
+}
