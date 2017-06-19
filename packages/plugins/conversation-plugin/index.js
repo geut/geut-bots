@@ -17,11 +17,13 @@ const Conversation = function (chassis, options) {
 
     chassis.ext('onPreMessageReceived', (msg, next) => {
 
-        if (msg.messageType !== 'message') return msg;
+        if (typeof msg === 'function'){
+            return msg();
+        }
 
         let ts = internals.regex.exec(msg.payload.ts);
 
-        if (!ts) return msg;
+        if (!ts) return next(msg);
 
         ts = ts[1];
 
@@ -38,7 +40,7 @@ const Conversation = function (chassis, options) {
             internals.lastTalk = [];
         }
         internals.lastMessageTs = ts;
-        return msg;
+        return next(msg);
     });
 };
 
