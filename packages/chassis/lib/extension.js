@@ -27,9 +27,9 @@ internals.Extension.prototype.add = function (event) {
             after: options.after,
             sort: this._chassis._extensionsSeq++
         };
-
         const node = {
-            func: methods[idx],             // Connection: function (request, next), Server: function (server, next)
+            func: methods[idx],
+            callerFn: event.callerFn,
             bind: options.bind,
             plugin: event.plugin
         };
