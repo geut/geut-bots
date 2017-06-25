@@ -56,7 +56,7 @@ Charly.startup(credentials, SlackChassis.attributes.name)
             console.log(input);
             if (input.chassis && input.chassis.topics) {
                 Charly.trigger(
-                    `Los temas de la última conversación fueron: ${JSON.stringify(input.chassis.topics.keywords)}`,
+                    `:spiral_note_pad:Los temas de la última conversación fueron: ${JSON.stringify(input.chassis.topics.keywords)}\nLas frases destacadas: ${JSON.stringify(input.chassis.topics.phrases)}`,
                     'backyard'
                 );
             }
