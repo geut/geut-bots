@@ -100,50 +100,24 @@ internals.Chassis.prototype._invoke = function (extType, params) {
 
     const exts = this._extensions[extType];
 
-    // stepper fn
-    const next = (err, res) => {
-
-        if (err) {
-            this._events.emit('internal-error', err);
-            throw err;
-            // return Promise.reject(err);
-        }
-
-        return Promise.resolve(res);
-    };
-
     if (!exts.nodes) {
-        return next(null, params);
+        return Promise.resolve(params);
     }
-    /*
-    const each = (ext, interResult) => {
-
-        const bind = ext.bind ? ext.bind : null;
-
-        if (!interResult) {
-            interResult = params;
-        }
-        return ext.func.call(bind, interResult, next);
-    };
-    */
-    // invoke ext points
-    // return this.series(exts.nodes);
 
     const debugWrap = (fnObj) => {
 
         if (this.debug && fnObj.callerFn) {
-
             this._events.emit('debug', `calling ${fnObj.callerFn} plugin`);
         }
         return fnObj.func;
-    }
+    };
 
     const iterate = index => (...args) => {
         const itemFn = exts.nodes[index];
-        const next = iterate(index + 1);
+        const nextFn = iterate(index + 1);
 
         return itemFn ?
-            Promise.resolve(debugWrap(itemFn)(...args, next)) :
+            Promise.resolve(debugWrap(itemFn)(...args, nextFn)) :
             Promise.resolve(...args);
     };
 
