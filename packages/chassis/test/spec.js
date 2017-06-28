@@ -5,9 +5,7 @@ Test('Initialization', (t) => {
 
     const chassis = new Chassis();
     t.deepEqual(typeof chassis, 'object', 'chassis instance should be an object');
-
     t.deepEqual(typeof chassis.startup, 'function', 'chassis instance should not be an empty object');
-
     t.end();
 });
 
@@ -29,12 +27,14 @@ Test('Register a new service', (t) => {
     chassis.startup({}, 'demoservice')
         .then((result) => {
 
-            chassis.trigger('test message', 'general');
-            t.end();
+            chassis
+                .trigger('test message', 'general')
+                .then(() => t.end())
+                .catch((err) => {
+                    t.fail(err);
+                });
         })
         .catch((err) => {
-
-            console.log('ERROR', err)
             t.fail(err);
         })
 });
@@ -60,7 +60,7 @@ Test('Add a simple plugin', (t) => {
 
             t.deepEqual(typeof chassis, 'object', 'chassis instance available from within the plugin');
             t.deepEqual(data.payload, 'test message', 'received message on plugin should be equal to triggered message');
-            next();
+            return next(data);
         });
     };
 
@@ -73,11 +73,14 @@ Test('Add a simple plugin', (t) => {
 
      chassis.startup({}, 'demoservice')
         .then((result) => {
-            chassis.trigger('test message', 'general');
-            t.end();
+            chassis
+                .trigger('test message', 'general')
+                .then(() => t.end())
+                .catch((err) => {
+                    t.fail(err);
+                });
         })
         .catch((err) => {
-            console.log('ERROR', err)
             t.fail(err);
         });
 });
@@ -103,7 +106,8 @@ Test('Add a simple plugin which fails', (t) => {
 
             t.deepEqual(typeof chassis, 'object', 'chassis instance available from within the plugin');
             t.deepEqual(data.payload, 'test message', 'received message on plugin should be equal to triggered message');
-            next(new Error('Failing from plugin'));
+            throw new Error('Failing from plugin')
+            return next();
         });
     };
 
@@ -116,14 +120,14 @@ Test('Add a simple plugin which fails', (t) => {
 
      chassis.startup({}, 'demoservice')
         .then((result) => {
-            chassis.trigger('test message', 'general')
+            chassis
+                .trigger('test message', 'general')
                 .catch((err) => {
                     t.equal(err.message, 'Failing from plugin', 'Should catch the error');
                     t.end();
                 });
         })
         .catch((err) => {
-            console.error('ERROR', err)
             t.fail(err);
         });
 });
