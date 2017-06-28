@@ -1,7 +1,6 @@
 /node_modules
-<<<<<<< HEAD
 /packages/*/node_modules
-=======
 /packages/**/node_modules
->>>>>>> Update: ignore .DS_Store files
+/packages/**/*.log
 .DS_Store
+
