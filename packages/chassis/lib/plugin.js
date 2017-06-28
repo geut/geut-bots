@@ -99,8 +99,9 @@ internals.Plugin.prototype.service = function (name, method, options) {
 };
 
 internals.Plugin.prototype.ext = function (events) {        // (event, method, options) -OR- (events)
-
+    /* eslint-disable */
     const callerFn = (arguments.callee && arguments.callee.caller) ? arguments.callee.caller.name : '';
+    /* eslint-enable */
 
     if (typeof events === 'string') {
         events = { type: arguments[0], method: arguments[1], options: arguments[2], callerFn };
@@ -126,15 +127,18 @@ internals.Plugin.prototype.engage = function (messageType, payload) {
 
     return this.root._invoke(EVENTS.message.received.pre, { messageType, payload })
         .then( (res) => this.onSense(res) )
-        .then( (res) => this.root._invoke(EVENTS.message.received.post, res) );
+        .then( (res) => this.root._invoke(EVENTS.message.received.post, res) )
+        .catch( (err) => {
+            this.root._events.emit('debug', `Error on engage fn: ${err.message}`);
+            throw err;
+        });
 };
 
 internals.Plugin.prototype.onSense = function (msg) {
- 
+
     if (!msg) return;
     if (typeof msg === 'function') return msg();
     const { messageType, payload } = msg;
-    console.log('> onSense ', JSON.stringify(payload));
     this.root._signals[messageType].dispatch(payload);
     return this.root._invoke(EVENTS.message.received.on, { messageType, payload });
 };
@@ -168,35 +172,10 @@ internals.Plugin.prototype.trigger = function (payload, where) {
     this.root._assert(this.root._running, 'First you need to register a service and then call chassis.startup method');
     return this.root._invoke(EVENTS.message.sent.pre, { payload, where })
         .then( (res) => this.onTrigger(res) )
-        .then( (res) => this.root._invoke(EVENTS.message.sent.post, res) );
-};
-
-internals.Plugin.prototype.series = function (items) {
-    /*
-    try {
-        return items.reduce( (promise, item) => {
-            return promise
-                .then( (result) => {
-                    return action.call(ctx, item, result);
-                });
-        }, Promise.resolve() );
-    } catch (e) {
-        return Promise.reject(e);
-    }
-    */
-    const iterate = index => (...args) => {
-        // debugger;
-        const itemFn = items[index];
-        const next = iterate(index + 1);
-        return itemFn ?
-            Promise.resolve(itemFn.func(...args, next)) :
-            Promise.resolve(...args);
-    };
-
-    try {
-        return iterate(0)();
-    } catch (ex) {
-        return Promise.reject(ex);
-    }
+        .then( (res) => this.root._invoke(EVENTS.message.sent.post, res) )
+        .catch( (err) => {
+            this.root._events.emit('debug', `Error on trigger fn: ${err.message}`);
+            throw err;
+        });
 };
 
