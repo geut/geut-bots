@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "6"
+cache:
+  directories:
+    - node_modules
+install:
+  - npm install
+before_script:
+  - npm install -g lerna
+  - ./node_modules/.bin/lerna bootstrap
+script: lerna run --scope @geut/chassis test
+
