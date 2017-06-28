@@ -18,7 +18,7 @@ const log = function log(chassis){
     chassis.ext('onMessageReceived', function(message, next){
 
         console.log(`> raw message: ${JSON.stringify(message)}`);
-        return message;
+        return next(message);
     });
 };
 
@@ -53,7 +53,6 @@ Charly.startup(credentials, SlackChassis.attributes.name)
         console.log('Charly bot: Up and ready!');
 
         Charly.sense('message', (input) => {
-            console.log(input);
             if (input.chassis && input.chassis.topics) {
                 Charly.trigger(
                     `:spiral_note_pad:Los temas de la última conversación fueron: ${JSON.stringify(input.chassis.topics.keywords)}\nLas frases destacadas: ${JSON.stringify(input.chassis.topics.phrases)}`,
