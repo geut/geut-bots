@@ -1,7 +1,7 @@
 # geut-bots
 The place for GEUT bots :robot:
-
 ___
+[![Build Status](https://travis-ci.org/geut/geut-bots.svg?branch=master)](https://travis-ci.org/geut/geut-bots)
 
 ##  Organization
 
