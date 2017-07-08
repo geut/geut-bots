@@ -2,6 +2,7 @@
 const Chassis = require('@geut/Chassis').Chassis;
 const SlackChassis = require('@geut/chassis-slack-service');
 const Conversation = require('@geut/conversation-plugin');
+const Topics = require('@geut/topics-plugin');
 const Charly = new Chassis({debug: true});
 
 /**
@@ -16,9 +17,8 @@ const log = function log(chassis){
 
     chassis.ext('onMessageReceived', function(message, next){
 
-        console.log(`raw message is: ${JSON.stringify(message)}`);
-        // next(null, message);
-        return message;
+        console.log(`> raw message: ${JSON.stringify(message)}`);
+        return next(message);
     });
 };
 
@@ -34,6 +34,10 @@ Charly.register([
         options: {}
     },
     {
+        register: Topics,
+        options: {}
+    },
+    {
         register: log,
         options: {}
     }
@@ -46,10 +50,17 @@ const credentials = {
 Charly.startup(credentials, SlackChassis.attributes.name)
     .then((data) => {
 
-        console.log(`Is Chassis running? ${JSON.stringify(Charly._running)}`);
         console.log('Charly bot: Up and ready!');
+
         Charly.sense('message', (input) => {
-        })
+            if (input.chassis && input.chassis.topics) {
+                Charly.trigger(
+                    `:spiral_note_pad:Los temas de la última conversación fueron: ${JSON.stringify(input.chassis.topics.keywords)}\nLas frases destacadas: ${JSON.stringify(input.chassis.topics.phrases)}`,
+                    'backyard'
+                );
+            }
+        });
+
     })
     .catch((error) => {
 

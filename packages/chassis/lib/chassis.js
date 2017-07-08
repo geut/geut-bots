@@ -46,20 +46,21 @@ exports = module.exports = internals.Chassis = function (opts = {}) {
         scan: new Signal()
     };
 
-    // public properties
+    // public bot properties
     this.toolbox = {};
 
     // build plugin system
     Plugin.call(this, this);
 
     // debug mode
+    this.debug = !!opts.debug;
+
     if (opts.debug) {
 
-        const debug = (err) => {
-            console.error('DEBUG', err.stack || JSON.stringigy(err));
-        };
-
-        this._events.on('internal-error', debug);
+        const debug = (msg) => console.info('> DEBUG', msg);
+        const error = (err) => console.error('> ERROR', err.stack || JSON.stringify(err));
+        this._events.on('debug', debug);
+        this._events.on('internal-error', error);
     }
 
     return this;
@@ -99,35 +100,32 @@ internals.Chassis.prototype._invoke = function (extType, params) {
 
     const exts = this._extensions[extType];
 
-    // stepper fn
-    const next = (err, res) => {
-
-        if (err) {
-            this._events.emit('internal-error', err);
-            throw err;
-            // return Promise.reject(err);
-        }
-
-        return Promise.resolve(res);
-    };
-
     if (!exts.nodes) {
-        return next(null, params);
+        return Promise.resolve(params);
     }
 
-    const each = (ext, interResult) => {
+    const debugWrap = (fnObj) => {
 
-        const bind = ext.bind ? ext.bind : null;
-
-        if (!interResult) {
-            interResult = params;
+        if (this.debug && fnObj.callerFn) {
+            this._events.emit('debug', `calling ${fnObj.callerFn} plugin`);
         }
-        return ext.func.call(bind, interResult, next);
+        return fnObj.func;
     };
 
-    // invoke ext points
-    const out = this.series(exts.nodes, each);
-    return out;
+    const iterate = index => (...args) => {
+        const itemFn = exts.nodes[index];
+        const nextFn = iterate(index + 1);
+
+        return itemFn ?
+            Promise.resolve(debugWrap(itemFn)(...args, nextFn)) :
+            Promise.resolve(...args);
+    };
+
+    try {
+        return iterate(0)(params);
+    } catch (ex) {
+        return Promise.reject(ex);
+    }
 };
 
 internals.Chassis.prototype.startup = function (credentials, serviceName) {

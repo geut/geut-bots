@@ -95,13 +95,16 @@ internals.Plugin.prototype.dependency = function (dependencies) {
 
 internals.Plugin.prototype.service = function (name, method, options) {
 
-    return this.root._service.add(name, method, options, this.realm);
+    return this.root._service.add(name, method, options);
 };
 
 internals.Plugin.prototype.ext = function (events) {        // (event, method, options) -OR- (events)
+    /* eslint-disable */
+    const callerFn = (arguments.callee && arguments.callee.caller) ? arguments.callee.caller.name : '';
+    /* eslint-enable */
 
     if (typeof events === 'string') {
-        events = { type: arguments[0], method: arguments[1], options: arguments[2] };
+        events = { type: arguments[0], method: arguments[1], options: arguments[2], callerFn };
         events = [].concat(events);
     }
 
@@ -116,7 +119,6 @@ internals.Plugin.prototype._ext = function (event) {
     const type = event.type;
 
     // general level (chassis) extensions
-
     this.root._assert(type !== EVENTS.start.pre || this.root._state === 'stopped', 'Cannot add onPreStart (after) extension after chassis was initialized');
     this.root._extensions[type].add(event);
 };
@@ -124,14 +126,18 @@ internals.Plugin.prototype._ext = function (event) {
 internals.Plugin.prototype.engage = function (messageType, payload) {
 
     return this.root._invoke(EVENTS.message.received.pre, { messageType, payload })
-        .then( (res) => {
-            this.onSense(res);
-        })
-        .then( (res) => this.root._invoke(EVENTS.message.received.post, res) );
+        .then( (res) => this.onSense(res) )
+        .then( (res) => this.root._invoke(EVENTS.message.received.post, res) )
+        .catch( (err) => {
+            this.root._events.emit('debug', `Error on engage fn: ${err.message}`);
+            throw err;
+        });
 };
 
 internals.Plugin.prototype.onSense = function (msg) {
+
     if (!msg) return;
+    if (typeof msg === 'function') return msg();
     const { messageType, payload } = msg;
     this.root._signals[messageType].dispatch(payload);
     return this.root._invoke(EVENTS.message.received.on, { messageType, payload });
@@ -158,7 +164,7 @@ internals.Plugin.prototype.onTrigger = function (msg) {
     if (!msg) return;
     const { payload, where } = msg;
     this.root._signals.trigger.dispatch(payload, where);
-    return this.root._invoke(EVENTS.message.sent.on, { payload, where });
+    return this.root._invoke(EVENTS.message.sent.on, msg);
 };
 
 internals.Plugin.prototype.trigger = function (payload, where) {
@@ -166,16 +172,10 @@ internals.Plugin.prototype.trigger = function (payload, where) {
     this.root._assert(this.root._running, 'First you need to register a service and then call chassis.startup method');
     return this.root._invoke(EVENTS.message.sent.pre, { payload, where })
         .then( (res) => this.onTrigger(res) )
-        .then( (res) => this.root._invoke(EVENTS.message.sent.post, res) );
-};
-
-internals.Plugin.prototype.series = function (items, action, ctx) {
-
-    return items.reduce( (promise, item) => {
-        return promise
-            .then( (result) => {
-                return action.call(ctx, item, result);
-            });
-    }, Promise.resolve() );
+        .then( (res) => this.root._invoke(EVENTS.message.sent.post, res) )
+        .catch( (err) => {
+            this.root._events.emit('debug', `Error on trigger fn: ${err.message}`);
+            throw err;
+        });
 };
 
